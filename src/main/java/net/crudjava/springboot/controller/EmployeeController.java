@@ -1,61 +1,49 @@
 package net.crudjava.springboot.controller;
 
-import net.crudjava.springboot.exception.ResourceNotFoundException;
 import net.crudjava.springboot.model.Employee;
-import net.crudjava.springboot.repository.EmployeeRepository;
+import net.crudjava.springboot.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
+
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/api/v1/employees")
 public class EmployeeController {
 
     @Autowired
-    private EmployeeRepository employeeRepository;
+    private EmployeeService service;
 
-    @GetMapping
-    public List<Employee> getAllEmployees(){
-        return employeeRepository.findAll();
-    }
-    @PostMapping
-    public Employee createEmployee(@RequestBody Employee employee){
-        return employeeRepository.save(employee);
+    @PostMapping("/employees")
+    public String addEmployee(@RequestBody Employee employee){
+        return service.addEmployee(employee);
 
     }
 
-    @GetMapping("{id}")
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable long id){
-        Employee employee = employeeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee no exit with id:" + id));
-        return ResponseEntity.ok(employee);
+    @GetMapping("/employees")
+    public List<Employee> getEmployees(){
+        return service.getEmployees();
     }
 
-    @PutMapping("{id}")
-    public ResponseEntity<Employee> updateEmployee(@PathVariable long id,@RequestBody Employee employeeDetails){
-        Employee updateEmplooyee = employeeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not exit with id:" +id));
+    @GetMapping("/employees/{id}")
+    public Optional<Employee> GetEmployee(@PathVariable long id){
 
-        updateEmplooyee.setFirstName(employeeDetails.getFirstName());
-        updateEmplooyee.setLastName(employeeDetails.getLastName());
-        updateEmplooyee.setEmailId(employeeDetails.getEmailId());
 
-        employeeRepository.save(updateEmplooyee);
-
-        return ResponseEntity.ok(updateEmplooyee);
+        return service.getEmployee(id);
     }
 
-    @DeleteMapping("{id}")
-    public ResponseEntity<HttpStatus> deleteEmployee(@PathVariable long id){
+    @PutMapping("/employees/{id}")
+    public String updateEmployee(@RequestBody Employee employee, @PathVariable long id){
 
-        Employee employee = employeeRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException("Employee not exit with id:" + id));
 
-        employeeRepository.delete(employee);
+        return service.updateEmployee(employee,id);
+    }
 
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    @DeleteMapping("/employees/{id}")
+    public String deleteEmployee(@PathVariable long id){
+
+
+        return service.deleteEmployee(id);
     }
 }
